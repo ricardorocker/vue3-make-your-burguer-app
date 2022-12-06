@@ -2,7 +2,7 @@
   <div>
     <p>Componente de Mensagem</p>
     <div>
-      <form id="burger-form">
+      <form id="burger-form" @submit="createBurger">
         <div class="input-container">
           <label for="name">Nome do cliente:</label>
           <input
@@ -17,28 +17,36 @@
           <label for="bread">Escolha o pão:</label>
           <select name="bread" id="bread" v-model="bread">
             <option value="">Selecione o tipo do pão</option>
-            <option v-for="bread in breads" :key="bread.id" :value="bread.tipo">{{bread.tipo}}</option>
+            <option v-for="bread in breads" :key="bread.id" :value="bread.tipo">
+              {{ bread.tipo }}
+            </option>
           </select>
         </div>
         <div class="input-container">
           <label for="meat">Escolha a carne do seu Burger:</label>
           <select name="meat" id="meat" v-model="meat">
             <option value="">Selecione o tipo da carne</option>
-            <option v-for="meat in meats" :key="meat.id" :value="meat.tipo">{{meat.tipo}}</option>
+            <option v-for="meat in meats" :key="meat.id" :value="meat.tipo">
+              {{ meat.tipo }}
+            </option>
           </select>
         </div>
         <div id="opcionais-container" class="input-container">
           <label id="opcionais-title" for="additionals"
             >Selecione os opcionais:</label
           >
-          <div class="checkbox-container" v-for="additional in additionalsData" :key="additional.id">
+          <div
+            class="checkbox-container"
+            v-for="additional in additionalsData"
+            :key="additional.id"
+          >
             <input
               type="checkbox"
               name="additionals"
               :value="additional.tipo"
               v-model="additionals"
             />
-            <span>{{additional.tipo}}</span>
+            <span>{{ additional.tipo }}</span>
           </div>
         </div>
         <div class="input-container">
@@ -54,32 +62,61 @@ export default {
   name: "BurgerForm",
   data() {
     return {
-        breads: null,
-        meats: null,
-        additionalsData: null,
-        name: null,
-        bread: null,
-        meat: null,
-        additionals: [],
-        status: "Solicitado",
-        msg: null
-    }
+      breads: null,
+      meats: null,
+      additionalsData: null,
+      name: null,
+      bread: null,
+      meat: null,
+      additionals: [],
+      msg: null,
+    };
   },
   methods: {
     async getIngredients() {
-        const req = await fetch("http://localhost:3000/ingredientes");
-        const data = await req.json();
+      const req = await fetch("http://localhost:3000/ingredientes");
+      const data = await req.json();
 
-        console.log(data);
+      console.log(data);
 
-        this.breads = data.paes;
-        this.meats = data.carnes;
-        this.additionalsData = data.opcionais;
-    }
+      this.breads = data.paes;
+      this.meats = data.carnes;
+      this.additionalsData = data.opcionais;
+    },
+    async createBurger(e) {
+      e.preventDefault();
+
+      const data = {
+        nome: this.name,
+        pao: this.bread,
+        carne: this.meat,
+        opcionais: Array.from(this.additionals),
+        status: "Solicitado",
+      };
+
+      console.log(data);
+
+      const post = await fetch("http://localhost:3000/burgers", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      });
+
+    const res = await post.json();
+
+    // limpar os campos
+    this.name = "";
+    this.bread = "";
+    this.meat = "";
+    this.additionals = "";
+
+    },
   },
   mounted() {
     this.getIngredients();
-  }
+  },
 };
 </script>
 
